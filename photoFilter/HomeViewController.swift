@@ -84,6 +84,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         let photoOption = UIAlertAction(title: "Photo", style: .Default) { (action) -> Void in
             let photoVC = PhotoViewController()
             photoVC.delegate = self
+            photoVC.destinationSize = CGSize(width: 100, height: 100)
             self.navigationController?.pushViewController(photoVC, animated: true)
         }
         
