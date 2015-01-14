@@ -32,12 +32,9 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     var gpuContext: CIContext!
     var thumbnails = [Photo]()
     
-    var filteredImage: Photo
-    
     let photoButton = UIButton()
     var doneButton: UIBarButtonItem?
     var shareButton: UIBarButtonItem?
-    var cancelFilterButton: UIBarButtonItem?
 
 
     //MARK: HomeViewController Lifecycle
@@ -81,7 +78,6 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         
         self.doneButton = UIBarButtonItem(title: "Done", style: .Done, target: self, action: "doneButtonPressed")
         self.shareButton = UIBarButtonItem(barButtonSystemItem: .Action, target: self, action: "shareButtonPressed")
-        self.cancelFilterButton = UIBarButtonItem(title: "Cancel", style: .Done, target: self, action: "cancelFilterButtonPressed")
         self.navigationItem.rightBarButtonItem = self.shareButton
         
         self.collectionView.dataSource = self
@@ -111,7 +107,6 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
                 self.view.layoutIfNeeded()
             })
             self.navigationItem.rightBarButtonItem = self.doneButton
-            self.navigationItem.leftBarButtonItem = self.cancelFilterButton
         }
         
         
@@ -181,17 +176,11 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
         let selectedFilter = filterNames[indexPath.row]
         
-        if self.imageView.image != nil {
-            if self.filteredImage.filteredImage == nil {
-                self.filteredImage = Photo(filterName: selectedFilter, operationQueue: self.imageQueue, context: self.gpuContext)
-                self.filteredImage.originalImage = self.imageView.image
-            }
-            
+        let filteredImage = Photo(filterName: selectedFilter, operationQueue: self.imageQueue, context: self.gpuContext)
+        filteredImage.originalImage = self.imageView.image
+        filteredImage.generateFilteredImage()
+        self.imageView.image = filteredImage.filteredImage
 
-        
-            filteredImage.generateFilteredImage()
-            self.imageView.image = self.filteredImage.filteredImage
-        }        
     }
     
     //MARK: UIPickerControllerDelegate
@@ -251,11 +240,6 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     }
     
     func doneButtonPressed() {
-        // set main image as fitlered image
-        if self.filteredImage.filteredImage != nil {
-            self.imageView.image = self.filteredImage.filteredImage!
-        }
-
         // hide filter collection view and revert right bar button to share
         self.navigationItem.rightBarButtonItem = self.shareButton
         self.imageViewYConstraint.constant = self.imageViewYFullView
@@ -263,13 +247,6 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         UIView.animateWithDuration(0.4, animations: { () -> Void in
             self.view.layoutIfNeeded()
         })
-    }
-    
-    func cancelFilterButtonPressed() {
-        // revert image to original
-        println("cancel filtering")
-        self.imageView.image = self.filteredImage.originalImage
-        
     }
     
     //MARK: Autolayout Constraints
