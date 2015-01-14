@@ -8,64 +8,160 @@
 
 import UIKit
 
-class HomeViewController: UIViewController, UIImagePickerControllerDelegate {
+class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionViewDataSource {
     
-    let alertController = UIAlertController(title: "Photo selector", message: "Select source", preferredStyle: UIAlertControllerStyle.ActionSheet)
+    let alertController = UIAlertController(title: "<Title>", message: "<message>", preferredStyle: .ActionSheet)
 
     var imageView = UIImageView()
+    let photoButton = UIButton()
+    var collectionView: UICollectionView!
+    var collectionViewYConstraint: NSLayoutConstraint!
     
-    override func loadView() {
-        let rootView = UIView(frame: UIScreen.mainScreen().bounds)
-        rootView.backgroundColor = UIColor.whiteColor()
-        
-        let photoButton = UIButton()
-        photoButton.setTitle("Photo", forState: .Normal)
-        photoButton.setTitleColor(UIColor.blackColor(), forState: .Normal)
-        photoButton.addTarget(self, action: "photoButtonPressed:", forControlEvents: .TouchUpInside)
-        
-        photoButton.setTranslatesAutoresizingMaskIntoConstraints(false)
-        imageView.setTranslatesAutoresizingMaskIntoConstraints(false)
+    let rootView = UIView()
+    var views = [String : AnyObject]()
+    
+    var originalThumbnail: UIImage?
+    var filterNames = [String]()
+    let imageQueue = NSOperationQueue()
+    var gpuContext: CIContext!
+    var thumbnails = [Thumbnail]()
 
-        rootView.addSubview(photoButton)
-        rootView.addSubview(imageView)
+    //MARK: HomeViewController Lifecycle
+    override func loadView() {
+        self.rootView.frame = UIScreen.mainScreen().bounds
+        self.rootView.backgroundColor = UIColor.blackColor()
         
-        let views = [
+        self.photoButton.setTitle("Photo", forState: .Normal)
+        self.photoButton.setTitleColor(UIColor.whiteColor(), forState: .Normal)
+        self.photoButton.addTarget(self, action: "photoButtonPressed:", forControlEvents: .TouchUpInside)
+
+        let collectionViewFlowLayout = UICollectionViewFlowLayout()
+        self.collectionView = UICollectionView(frame: CGRectZero, collectionViewLayout: collectionViewFlowLayout)
+        collectionViewFlowLayout.itemSize = CGSize(width: 100, height: 100)
+        collectionViewFlowLayout.minimumInteritemSpacing = 0.0
+        collectionViewFlowLayout.scrollDirection = .Horizontal
+        self.collectionView.backgroundColor = UIColor.blackColor()
+        
+        self.photoButton.setTranslatesAutoresizingMaskIntoConstraints(false)
+        self.imageView.setTranslatesAutoresizingMaskIntoConstraints(false)
+        self.collectionView.setTranslatesAutoresizingMaskIntoConstraints(false)
+
+        self.rootView.addSubview(photoButton)
+        self.rootView.addSubview(imageView)
+        self.rootView.addSubview(collectionView)
+        
+        self.views = [
             "photoButton" : photoButton,
-            "imageView" : imageView]
-        
-        setupAutolayoutConstraints(rootView, views: views)
-        
+            "imageView" : imageView,
+            "collectionView" : collectionView]
         
         self.view = rootView
-
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        self.setupAutolayoutConstraints()
+        
         self.title = "Home"
+        self.collectionView.dataSource = self
+        self.collectionView.registerClass(FilterCell.self, forCellWithReuseIdentifier: "FILTER_CELL")
         
         let galleryOption = UIAlertAction(title: "Gallery", style: .Default) { (action) -> Void in
             let galleryVC = GalleryViewController()
-            
+            galleryVC.delegate = self
             self.navigationController?.pushViewController(galleryVC, animated: true)
-            
         }
 
         let cameraOption = UIAlertAction(title: "Camera", style: .Default) { (action) -> Void in
-            
-            println("Camera not yet installed")
-            
+            let cameraAlert = UIAlertController(title: "Camera", message: "Not currently available", preferredStyle: .Alert)
+            let OKAction = UIAlertAction(title: "OK", style: .Default) { (action) in }
+            cameraAlert.addAction(OKAction)
+            self.presentViewController(cameraAlert, animated: true, completion: nil)
+        }
+
+        let filterOption = UIAlertAction(title: "Apply Filter", style: .Default) { (action) -> Void in
+            //set new margin to show filter collectionView
+            self.collectionViewYConstraint.constant = 20
+                
+            UIView.animateWithDuration(0.4, animations: { () -> Void in
+                self.view.layoutIfNeeded()
+            })
         }
         
-        alertController.addAction(galleryOption)
-        alertController.addAction(cameraOption)
+        self.alertController.addAction(galleryOption)
+        self.alertController.addAction(cameraOption)
+        self.alertController.addAction(filterOption)
         
+        setupGPU()
+        setupThumbnails()
+    }
+    
+    
+    func setupGPU() {
+        // setup GPU for use
+        let options = [kCIContextOutputColorSpace : NSNull()]
+        let eaglContext = EAGLContext(API: EAGLRenderingAPI.OpenGLES2)
+        self.gpuContext = CIContext(EAGLContext: eaglContext, options: options)
     }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+    func setupThumbnails() {
+        self.filterNames = [
+            "CISepiaTone",
+            "CIPhotoEffectChrome",
+            "CIPhotoEffectNoir",
+            "CIVignette"]
+        
+        for name in self.filterNames {
+            let thumbnail = Thumbnail(filterName: name, operationQueue: self.imageQueue, context: self.gpuContext)
+            self.thumbnails.append(thumbnail)
+        }
+    }
+
+    //MARK: UICollectionViewDataSource
+    func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return self.thumbnails.count
+    }
+    
+    func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
+        let cell = self.collectionView.dequeueReusableCellWithReuseIdentifier("FILTER_CELL", forIndexPath: indexPath) as FilterCell
+        let thumbnail = self.thumbnails[indexPath.row]
+        if thumbnail.originalImage != nil {
+            if thumbnail.filteredImage == nil {
+                thumbnail.generateFilteredImage()
+                cell.imageView.image = thumbnail.filteredImage!
+            }
+        }
+
+        return cell
+    }
+    
+    
+    //MARK: ImageSelectedDelegate
+    func controllerDidSelectImage(image: UIImage) {
+        self.imageView.image = image
+        self.generateThumbnail(image)
+        
+        for thumbnail in self.thumbnails {
+            thumbnail.originalImage = self.originalThumbnail
+        }
+        
+        self.collectionView.reloadData()
+
+    }
+    
+    func generateThumbnail(originalImage: UIImage) {
+        //resize original image for thumbnail
+        let imageWidth = 100
+        let imageHeight = 100
+        
+        let size = CGSize(width: imageWidth, height: imageHeight)
+        
+        UIGraphicsBeginImageContext(size) //open
+        originalImage.drawInRect(CGRect(x: 0, y: 0, width: imageWidth, height: imageHeight))
+        self.originalThumbnail = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()  //close to prevent memory leak
+        
     }
     
     //MARK: Button actions
@@ -75,13 +171,40 @@ class HomeViewController: UIViewController, UIImagePickerControllerDelegate {
     
     
     //MARK: Autolayout Constraints
-    func setupAutolayoutConstraints(rootView: UIView, views: [String:UIView]) {
-        rootView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("V:|-80-[imageView]-8-[photoButton]-8-|", options: nil, metrics: nil, views: views))
-        rootView.addConstraint(NSLayoutConstraint(item: views["photoButton"] as UIView!, attribute: NSLayoutAttribute.CenterX, relatedBy: NSLayoutRelation.Equal, toItem: rootView, attribute: .CenterX, multiplier: 1.0, constant: 0.0))
+    func setupAutolayoutConstraints() {
+
+        self.rootView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(
+            "V:|-80-[imageView]-8-[photoButton]-8-|",
+            options: nil, metrics: nil, views: self.views))
+        self.rootView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(
+            "H:|-16-[imageView]-16-|",
+            options: nil, metrics: nil, views: self.views))
         
-        rootView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat("H:|-16-[imageView]-16-|", options: nil, metrics: nil, views: views))
+        //center photoButton horizontally
+        self.rootView.addConstraint(NSLayoutConstraint(
+            item: views["photoButton"] as UIView!, attribute: NSLayoutAttribute.CenterX, relatedBy: NSLayoutRelation.Equal,
+            toItem: rootView, attribute: .CenterX, multiplier: 1.0, constant: 0.0))
+        
+        //animated collectionView layout
+        self.rootView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(
+            "H:|[collectionView]|",
+            options: nil, metrics: nil, views: self.views))
+
+        //save Y constraint to allow animation
+        let collectionViewConstraintVeritcal = NSLayoutConstraint.constraintsWithVisualFormat(
+            "V:[collectionView(100)]-(-120)-|",
+            options: nil, metrics: nil, views: self.views)
+        self.collectionViewYConstraint = collectionViewConstraintVeritcal[1] as NSLayoutConstraint
+        self.rootView.addConstraints(collectionViewConstraintVeritcal)
+
+        
 
     }
     
 
 }
+
+
+
+
+

@@ -1,14 +1,14 @@
 //
-//  ThumbnailCell.swift
+//  GalleryCell.swift
 //  photoFilter
 //
-//  Created by Pho Diep on 1/12/15.
+//  Created by Pho Diep on 1/13/15.
 //  Copyright (c) 2015 Pho Diep. All rights reserved.
 //
 
 import UIKit
 
-class ThumbnailCell: UICollectionViewCell {
+class GalleryCell: UICollectionViewCell {
     
     var imageView = UIImageView()
     
@@ -17,8 +17,9 @@ class ThumbnailCell: UICollectionViewCell {
         
         self.addSubview(self.imageView)
         
-        self.backgroundColor = UIColor.blueColor()
+        self.backgroundColor = UIColor.blackColor()
         self.imageView.frame = self.bounds
+        
     }
     
     required init(coder aDecoder: NSCoder) {
