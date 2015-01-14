@@ -18,6 +18,8 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     let imageViewYSmallerView = 108 as CGFloat
     var imageViewYConstraint: NSLayoutConstraint!
     
+    var preFilterImage = UIImageView()
+    
     var collectionView: UICollectionView!
     var collectionViewYConstraint: NSLayoutConstraint!
     let collectionViewYshow = 8 as CGFloat
@@ -35,6 +37,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     let photoButton = UIButton()
     var doneButton: UIBarButtonItem?
     var shareButton: UIBarButtonItem?
+    var cancelFilterButton: UIBarButtonItem?
 
 
     //MARK: HomeViewController Lifecycle
@@ -78,6 +81,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         
         self.doneButton = UIBarButtonItem(title: "Done", style: .Done, target: self, action: "doneButtonPressed")
         self.shareButton = UIBarButtonItem(barButtonSystemItem: .Action, target: self, action: "shareButtonPressed")
+        self.cancelFilterButton = UIBarButtonItem(title: "Cancel", style: .Done, target: self, action: "cancelFilterButtonPressed")
         self.navigationItem.rightBarButtonItem = self.shareButton
         
         self.collectionView.dataSource = self
@@ -102,11 +106,14 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
             //set new margin to show filter collectionView
             self.imageViewYConstraint.constant = self.imageViewYSmallerView
             self.collectionViewYConstraint.constant = self.collectionViewYshow
+            
+            self.preFilterImage.image = self.imageView.image
                 
             UIView.animateWithDuration(0.4, animations: { () -> Void in
                 self.view.layoutIfNeeded()
             })
             self.navigationItem.rightBarButtonItem = self.doneButton
+            self.navigationItem.leftBarButtonItem = self.cancelFilterButton
         }
         
         
@@ -241,12 +248,28 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     
     func doneButtonPressed() {
         // hide filter collection view and revert right bar button to share
+        self.navigationItem.leftBarButtonItem = nil
         self.navigationItem.rightBarButtonItem = self.shareButton
         self.imageViewYConstraint.constant = self.imageViewYFullView
         self.collectionViewYConstraint.constant = self.collectionViewYhide
         UIView.animateWithDuration(0.4, animations: { () -> Void in
             self.view.layoutIfNeeded()
         })
+    }
+    
+    func cancelFilterButtonPressed() {
+        // hide filter collection view and revert right bar button to share
+        self.navigationItem.leftBarButtonItem = nil
+        self.navigationItem.rightBarButtonItem = self.shareButton
+        self.imageViewYConstraint.constant = self.imageViewYFullView
+        self.collectionViewYConstraint.constant = self.collectionViewYhide
+        UIView.animateWithDuration(0.4, animations: { () -> Void in
+            self.view.layoutIfNeeded()
+        })
+        
+        //revert to original image
+        self.imageView.image = self.preFilterImage.image
+
     }
     
     //MARK: Autolayout Constraints
