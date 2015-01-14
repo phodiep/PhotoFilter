@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Social
 
 class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
@@ -111,9 +112,14 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
             self.alertController.addAction(cameraOption)
         }
         
+        let cancelOption = UIAlertAction(title: "Cancel", style: .Cancel) { (action) -> Void in
+            //close actionsheet
+        }
+        
         self.alertController.addAction(galleryOption)
         self.alertController.addAction(photoOption)
         self.alertController.addAction(filterOption)
+        self.alertController.addAction(cancelOption)
         
         setupGPU()
         setupThumbnails()
@@ -207,11 +213,29 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     func shareButtonPressed() {
         println("share button pressed")
         
+        // share imageview on twitter
+        
+        if SLComposeViewController.isAvailableForServiceType(SLServiceTypeTwitter) {
+            let SLViewController = SLComposeViewController(forServiceType: SLServiceTypeTwitter)
+            SLViewController.addImage(self.imageView.image)
+            self.presentViewController(SLViewController, animated: true, completion: nil)
+            
+        } else {
+            println("twitter is not available")
+        }
+        
+        
+        
     }
     
     func doneButtonPressed() {
-        println("done button pressed")
+        // hide filter collection view and revert right bar button to share
         
+        self.navigationItem.rightBarButtonItem = self.shareButton
+        self.collectionViewYConstraint.constant = -120
+        UIView.animateWithDuration(0.4, animations: { () -> Void in
+            self.view.layoutIfNeeded()
+        })
     }
     
     //MARK: Autolayout Constraints
