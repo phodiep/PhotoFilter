@@ -14,15 +14,16 @@ class GalleryViewController: UIViewController, UICollectionViewDataSource, UICol
     
     var collectionView: UICollectionView!
     var imageGallery = [UIImage]()
-    let collectionViewFlowLayout = UICollectionViewFlowLayout()
     let rootView = UIView()
     var views = [String : AnyObject]()
     
     override func loadView() {
 
         self.rootView.frame = UIScreen.mainScreen().bounds
-        self.collectionView = UICollectionView(frame: UIScreen.mainScreen().bounds, collectionViewLayout: collectionViewFlowLayout)
-        self.collectionViewFlowLayout.itemSize = CGSize(width: 100, height: 100)
+        
+        self.collectionView = UICollectionView(frame: rootView.bounds, collectionViewLayout: UICollectionViewFlowLayout())
+        let collectionViewFlowLayout = collectionView.collectionViewLayout as UICollectionViewFlowLayout
+        collectionViewFlowLayout.itemSize = CGSize(width: 100, height: 100)
 
         self.collectionView.setTranslatesAutoresizingMaskIntoConstraints(false)
 

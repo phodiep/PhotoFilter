@@ -8,7 +8,7 @@
 
 import UIKit
 
-class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionViewDataSource {
+class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     let alertController = UIAlertController(title: "<Title>", message: "<message>", preferredStyle: .ActionSheet)
 
@@ -25,6 +25,9 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     let imageQueue = NSOperationQueue()
     var gpuContext: CIContext!
     var thumbnails = [Thumbnail]()
+    
+    var doneButton: UIBarButtonItem?
+    var shareButton: UIBarButtonItem?
 
     //MARK: HomeViewController Lifecycle
     override func loadView() {
@@ -64,6 +67,11 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         self.setupAutolayoutConstraints()
         
         self.title = "Home"
+        
+        self.doneButton = UIBarButtonItem(title: "Done", style: .Done, target: self, action: "doneButtonPressed")
+        self.shareButton = UIBarButtonItem(barButtonSystemItem: .Action, target: self, action: "shareButtonPressed")
+        self.navigationItem.rightBarButtonItem = self.shareButton
+        
         self.collectionView.dataSource = self
         self.collectionView.registerClass(FilterCell.self, forCellWithReuseIdentifier: "FILTER_CELL")
         
@@ -73,24 +81,37 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
             self.navigationController?.pushViewController(galleryVC, animated: true)
         }
 
-        let cameraOption = UIAlertAction(title: "Camera", style: .Default) { (action) -> Void in
-            let cameraAlert = UIAlertController(title: "Camera", message: "Not currently available", preferredStyle: .Alert)
-            let OKAction = UIAlertAction(title: "OK", style: .Default) { (action) in }
-            cameraAlert.addAction(OKAction)
-            self.presentViewController(cameraAlert, animated: true, completion: nil)
+        let photoOption = UIAlertAction(title: "Photo", style: .Default) { (action) -> Void in
+            let photoVC = PhotoViewController()
+            photoVC.delegate = self
+            self.navigationController?.pushViewController(photoVC, animated: true)
         }
-
+        
+        
         let filterOption = UIAlertAction(title: "Apply Filter", style: .Default) { (action) -> Void in
             //set new margin to show filter collectionView
-            self.collectionViewYConstraint.constant = 20
+            self.collectionViewYConstraint.constant = 8
                 
             UIView.animateWithDuration(0.4, animations: { () -> Void in
                 self.view.layoutIfNeeded()
             })
+            self.navigationItem.rightBarButtonItem = self.doneButton
+        }
+        
+        
+        if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera) {
+            let cameraOption = UIAlertAction(title: "Camera", style: .Default) { (action) -> Void in
+                let imagePickerController = UIImagePickerController()
+                imagePickerController.sourceType = .Camera
+                imagePickerController.allowsEditing = true
+                imagePickerController.delegate = self
+                self.presentViewController(imagePickerController, animated: true, completion: nil)
+            }
+            self.alertController.addAction(cameraOption)
         }
         
         self.alertController.addAction(galleryOption)
-        self.alertController.addAction(cameraOption)
+        self.alertController.addAction(photoOption)
         self.alertController.addAction(filterOption)
         
         setupGPU()
@@ -137,6 +158,17 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         return cell
     }
     
+    //MARK: UIPickerControllerDelegate
+    func imagePickerControllerDidCancel(picker: UIImagePickerController) {
+        picker.dismissViewControllerAnimated(true, completion: nil)
+    }
+    
+    func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [NSObject : AnyObject]) {
+        let image = info[UIImagePickerControllerEditedImage] as UIImage
+        self.controllerDidSelectImage(image)
+        picker.dismissViewControllerAnimated(true, completion: nil)
+    }
+    
     
     //MARK: ImageSelectedDelegate
     func controllerDidSelectImage(image: UIImage) {
@@ -144,8 +176,8 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         self.generateThumbnail(image)
         
         for thumbnail in self.thumbnails {
-            thumbnail.originalImage = self.originalThumbnail
-            thumbnail.filteredImage = nil
+            thumbnail.originalImage = self.originalThumbnail    // reset original image
+            thumbnail.filteredImage = nil                       //clear any cached thumbnail images
         }
         
         self.collectionView.reloadData()
@@ -171,6 +203,15 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         self.presentViewController(self.alertController, animated: true, completion: nil)
     }
     
+    func shareButtonPressed() {
+        println("share button pressed")
+        
+    }
+    
+    func doneButtonPressed() {
+        println("done button pressed")
+        
+    }
     
     //MARK: Autolayout Constraints
     func setupAutolayoutConstraints() {

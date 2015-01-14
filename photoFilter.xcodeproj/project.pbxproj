@@ -28,6 +28,7 @@
 		1DE582331A65CA12000F90B5 /* Images.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DE582321A65CA12000F90B5 /* Images.swift */; };
 		1DE582351A65CB2D000F90B5 /* Thumbnail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DE582341A65CB2D000F90B5 /* Thumbnail.swift */; };
 		1DE582371A65E1F6000F90B5 /* FilterCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DE582361A65E1F6000F90B5 /* FilterCell.swift */; };
+		1DE5823B1A670FF1000F90B5 /* PhotoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DE5823A1A670FF1000F90B5 /* PhotoViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -66,6 +67,7 @@
 		1DE582321A65CA12000F90B5 /* Images.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Images.swift; sourceTree = "<group>"; };
 		1DE582341A65CB2D000F90B5 /* Thumbnail.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Thumbnail.swift; sourceTree = "<group>"; };
 		1DE582361A65E1F6000F90B5 /* FilterCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FilterCell.swift; sourceTree = "<group>"; };
+		1DE5823A1A670FF1000F90B5 /* PhotoViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PhotoViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -177,6 +179,7 @@
 				1DA4EAE81A64664600CCE4E2 /* HomeViewController.swift */,
 				1DA4EAEA1A64665900CCE4E2 /* GalleryViewController.swift */,
 				1DE582301A65C414000F90B5 /* Protocols.swift */,
+				1DE5823A1A670FF1000F90B5 /* PhotoViewController.swift */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -295,6 +298,7 @@
 				1DE5822F1A65C126000F90B5 /* GalleryCell.swift in Sources */,
 				1DA4EAEB1A64665900CCE4E2 /* GalleryViewController.swift in Sources */,
 				1DE582331A65CA12000F90B5 /* Images.swift in Sources */,
+				1DE5823B1A670FF1000F90B5 /* PhotoViewController.swift in Sources */,
 				1DA4EAE91A64664600CCE4E2 /* HomeViewController.swift in Sources */,
 				1DE582351A65CB2D000F90B5 /* Thumbnail.swift in Sources */,
 				1DA4EABE1A64642600CCE4E2 /* AppDelegate.swift in Sources */,
