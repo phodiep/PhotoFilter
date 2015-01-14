@@ -130,6 +130,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
             if thumbnail.filteredImage == nil {
                 thumbnail.generateFilteredImage()
                 cell.imageView.image = thumbnail.filteredImage!
+                cell.filterLabel.text = self.filterNames[indexPath.row]
             }
         }
 
@@ -144,6 +145,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         
         for thumbnail in self.thumbnails {
             thumbnail.originalImage = self.originalThumbnail
+            thumbnail.filteredImage = nil
         }
         
         self.collectionView.reloadData()
