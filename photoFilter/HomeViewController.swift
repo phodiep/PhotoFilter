@@ -9,7 +9,7 @@
 import UIKit
 import Social
 
-class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionViewDataSource, UICollectionViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     let alertController = UIAlertController(title: "<Title>", message: "<message>", preferredStyle: .ActionSheet)
 
@@ -30,11 +30,14 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     var filterNames = [String]()
     let imageQueue = NSOperationQueue()
     var gpuContext: CIContext!
-    var thumbnails = [Thumbnail]()
+    var thumbnails = [Photo]()
+    
+    var filteredImage: Photo
     
     let photoButton = UIButton()
     var doneButton: UIBarButtonItem?
     var shareButton: UIBarButtonItem?
+    var cancelFilterButton: UIBarButtonItem?
 
 
     //MARK: HomeViewController Lifecycle
@@ -78,9 +81,11 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         
         self.doneButton = UIBarButtonItem(title: "Done", style: .Done, target: self, action: "doneButtonPressed")
         self.shareButton = UIBarButtonItem(barButtonSystemItem: .Action, target: self, action: "shareButtonPressed")
+        self.cancelFilterButton = UIBarButtonItem(title: "Cancel", style: .Done, target: self, action: "cancelFilterButtonPressed")
         self.navigationItem.rightBarButtonItem = self.shareButton
         
         self.collectionView.dataSource = self
+        self.collectionView.delegate = self
         self.collectionView.registerClass(FilterCell.self, forCellWithReuseIdentifier: "FILTER_CELL")
         
         let galleryOption = UIAlertAction(title: "Gallery", style: .Default) { (action) -> Void in
@@ -106,6 +111,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
                 self.view.layoutIfNeeded()
             })
             self.navigationItem.rightBarButtonItem = self.doneButton
+            self.navigationItem.leftBarButtonItem = self.cancelFilterButton
         }
         
         
@@ -146,10 +152,10 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
             "CISepiaTone",
             "CIPhotoEffectChrome",
             "CIPhotoEffectNoir",
-            "CIVignette"]
+            "CIPhotoEffectFade"]
         
         for name in self.filterNames {
-            let thumbnail = Thumbnail(filterName: name, operationQueue: self.imageQueue, context: self.gpuContext)
+            let thumbnail = Photo(filterName: name, operationQueue: self.imageQueue, context: self.gpuContext)
             self.thumbnails.append(thumbnail)
         }
     }
@@ -169,8 +175,23 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
                 cell.filterLabel.text = self.filterNames[indexPath.row]
             }
         }
-
         return cell
+    }
+    
+    func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
+        let selectedFilter = filterNames[indexPath.row]
+        
+        if self.imageView.image != nil {
+            if self.filteredImage.filteredImage == nil {
+                self.filteredImage = Photo(filterName: selectedFilter, operationQueue: self.imageQueue, context: self.gpuContext)
+                self.filteredImage.originalImage = self.imageView.image
+            }
+            
+
+        
+            filteredImage.generateFilteredImage()
+            self.imageView.image = self.filteredImage.filteredImage
+        }        
     }
     
     //MARK: UIPickerControllerDelegate
@@ -219,32 +240,36 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     }
     
     func shareButtonPressed() {
-        println("share button pressed")
-        
         // share imageview on twitter
-        
         if SLComposeViewController.isAvailableForServiceType(SLServiceTypeTwitter) {
             let SLViewController = SLComposeViewController(forServiceType: SLServiceTypeTwitter)
             SLViewController.addImage(self.imageView.image)
             self.presentViewController(SLViewController, animated: true, completion: nil)
-            
         } else {
             println("twitter is not available")
         }
-        
-        
-        
     }
     
     func doneButtonPressed() {
+        // set main image as fitlered image
+        if self.filteredImage.filteredImage != nil {
+            self.imageView.image = self.filteredImage.filteredImage!
+        }
+
         // hide filter collection view and revert right bar button to share
-        
         self.navigationItem.rightBarButtonItem = self.shareButton
         self.imageViewYConstraint.constant = self.imageViewYFullView
         self.collectionViewYConstraint.constant = self.collectionViewYhide
         UIView.animateWithDuration(0.4, animations: { () -> Void in
             self.view.layoutIfNeeded()
         })
+    }
+    
+    func cancelFilterButtonPressed() {
+        // revert image to original
+        println("cancel filtering")
+        self.imageView.image = self.filteredImage.originalImage
+        
     }
     
     //MARK: Autolayout Constraints
@@ -255,10 +280,6 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
             options: nil, metrics: nil, views: self.views)
         self.imageViewYConstraint = imageViewConstraintVeritcal[1] as NSLayoutConstraint
         self.rootView.addConstraints(imageViewConstraintVeritcal)
-        
-//        self.rootView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(
-//            "V:|-80-[imageView]-8-[photoButton]-8-|",
-//            options: nil, metrics: nil, views: self.views))
 
         self.rootView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(
             "V:[photoButton]-8-|",
