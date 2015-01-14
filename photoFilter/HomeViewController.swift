@@ -14,9 +14,14 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     let alertController = UIAlertController(title: "<Title>", message: "<message>", preferredStyle: .ActionSheet)
 
     var imageView = UIImageView()
-    let photoButton = UIButton()
+    let imageViewYFullView = 8 as CGFloat
+    let imageViewYSmallerView = 108 as CGFloat
+    var imageViewYConstraint: NSLayoutConstraint!
+    
     var collectionView: UICollectionView!
     var collectionViewYConstraint: NSLayoutConstraint!
+    let collectionViewYshow = 8 as CGFloat
+    let collectionViewYhide = -120 as CGFloat
     
     let rootView = UIView()
     var views = [String : AnyObject]()
@@ -27,8 +32,10 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     var gpuContext: CIContext!
     var thumbnails = [Thumbnail]()
     
+    let photoButton = UIButton()
     var doneButton: UIBarButtonItem?
     var shareButton: UIBarButtonItem?
+
 
     //MARK: HomeViewController Lifecycle
     override func loadView() {
@@ -92,7 +99,8 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         
         let filterOption = UIAlertAction(title: "Apply Filter", style: .Default) { (action) -> Void in
             //set new margin to show filter collectionView
-            self.collectionViewYConstraint.constant = 8
+            self.imageViewYConstraint.constant = self.imageViewYSmallerView
+            self.collectionViewYConstraint.constant = self.collectionViewYshow
                 
             UIView.animateWithDuration(0.4, animations: { () -> Void in
                 self.view.layoutIfNeeded()
@@ -232,7 +240,8 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         // hide filter collection view and revert right bar button to share
         
         self.navigationItem.rightBarButtonItem = self.shareButton
-        self.collectionViewYConstraint.constant = -120
+        self.imageViewYConstraint.constant = self.imageViewYFullView
+        self.collectionViewYConstraint.constant = self.collectionViewYhide
         UIView.animateWithDuration(0.4, animations: { () -> Void in
             self.view.layoutIfNeeded()
         })
@@ -241,8 +250,18 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     //MARK: Autolayout Constraints
     func setupAutolayoutConstraints() {
 
+        let imageViewConstraintVeritcal = NSLayoutConstraint.constraintsWithVisualFormat(
+            "V:|-80-[imageView]-(\(self.imageViewYFullView))-[photoButton]",
+            options: nil, metrics: nil, views: self.views)
+        self.imageViewYConstraint = imageViewConstraintVeritcal[1] as NSLayoutConstraint
+        self.rootView.addConstraints(imageViewConstraintVeritcal)
+        
+//        self.rootView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(
+//            "V:|-80-[imageView]-8-[photoButton]-8-|",
+//            options: nil, metrics: nil, views: self.views))
+
         self.rootView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(
-            "V:|-80-[imageView]-8-[photoButton]-8-|",
+            "V:[photoButton]-8-|",
             options: nil, metrics: nil, views: self.views))
         self.rootView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(
             "H:|-16-[imageView]-16-|",
@@ -260,7 +279,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
 
         //save Y constraint to allow animation
         let collectionViewConstraintVeritcal = NSLayoutConstraint.constraintsWithVisualFormat(
-            "V:[collectionView(100)]-(-120)-|",
+            "V:[collectionView(100)]-(\(self.collectionViewYhide))-|",
             options: nil, metrics: nil, views: self.views)
         self.collectionViewYConstraint = collectionViewConstraintVeritcal[1] as NSLayoutConstraint
         self.rootView.addConstraints(collectionViewConstraintVeritcal)
