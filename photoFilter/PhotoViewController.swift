@@ -20,16 +20,17 @@ class PhotoViewController: UIViewController, UICollectionViewDataSource, UIColle
     var delegate: ImageSelectedProtocol?
 
     var collectionView: UICollectionView!
+    var collectionViewFlowLayout: UICollectionViewFlowLayout!
     
     //MARK: ViewController LifeCycle
     
     override func loadView() {
         let rootView = UIView(frame: UIScreen.mainScreen().bounds)
         self.collectionView = UICollectionView(frame: rootView.bounds, collectionViewLayout: UICollectionViewFlowLayout())
-        let collectionViewFlowLayout = collectionView.collectionViewLayout as UICollectionViewFlowLayout
-        collectionViewFlowLayout.itemSize = CGSize(width: 100, height: 100)
+        self.collectionViewFlowLayout = self.collectionView.collectionViewLayout as UICollectionViewFlowLayout
+        self.collectionViewFlowLayout.itemSize = CGSize(width: 100, height: 100)
         
-        collectionView.setTranslatesAutoresizingMaskIntoConstraints(false)
+        self.collectionView.setTranslatesAutoresizingMaskIntoConstraints(false)
         
         rootView.addSubview(self.collectionView)
         
@@ -40,7 +41,7 @@ class PhotoViewController: UIViewController, UICollectionViewDataSource, UIColle
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.title = "Photo"
+        self.title = NSLocalizedString("Photo", comment: "Photo View title")
         self.view.backgroundColor = UIColor.blackColor()
 
         self.assetFetchResults = PHAsset.fetchAssetsWithOptions(nil)
@@ -50,7 +51,38 @@ class PhotoViewController: UIViewController, UICollectionViewDataSource, UIColle
         
         self.collectionView.registerClass(GalleryCell.self, forCellWithReuseIdentifier: "PHOTO_CELL")
         
+        let pinchRecognizer = UIPinchGestureRecognizer(target: self, action: "collectionViewPinched:")
+        self.collectionView.addGestureRecognizer(pinchRecognizer)
 
+
+    }
+    
+    //MARK: Gesture Recognizer Actions
+    func collectionViewPinched(sender: UIPinchGestureRecognizer) {
+        switch sender.state {
+        case .Began:
+            println("")
+        case .Changed:
+            println("")
+        case .Ended:
+            self.collectionView.performBatchUpdates({ () -> Void in
+                let oldWidth = self.collectionViewFlowLayout.itemSize.width
+                let oldHeight = self.collectionViewFlowLayout.itemSize.height
+                if sender.velocity > 0 {
+                    //zoom in
+                    let newSize = CGSize(width: oldWidth * 1.5 , height: oldHeight * 1.5)
+                    self.collectionViewFlowLayout.itemSize = newSize
+                } else if sender.velocity < 0 {
+                    //zoom out
+                    let newSize = CGSize(width: oldWidth / 1.5 , height: oldHeight / 1.5)
+                    self.collectionViewFlowLayout.itemSize = newSize
+                }
+                }, completion: { (completed) -> Void in
+            })
+            
+        default:
+            println("default")
+        }
     }
     
 

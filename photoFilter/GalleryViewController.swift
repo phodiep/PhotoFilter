@@ -13,6 +13,7 @@ class GalleryViewController: UIViewController, UICollectionViewDataSource, UICol
     var delegate: ImageSelectedProtocol?
     
     var collectionView: UICollectionView!
+    var collectionViewFlowLayout: UICollectionViewFlowLayout!
     var imageGallery = [UIImage]()
     let rootView = UIView()
     var views = [String : AnyObject]()
@@ -22,8 +23,8 @@ class GalleryViewController: UIViewController, UICollectionViewDataSource, UICol
         self.rootView.frame = UIScreen.mainScreen().bounds
         
         self.collectionView = UICollectionView(frame: rootView.bounds, collectionViewLayout: UICollectionViewFlowLayout())
-        let collectionViewFlowLayout = collectionView.collectionViewLayout as UICollectionViewFlowLayout
-        collectionViewFlowLayout.itemSize = CGSize(width: 100, height: 100)
+        self.collectionViewFlowLayout = collectionView.collectionViewLayout as UICollectionViewFlowLayout
+        self.collectionViewFlowLayout.itemSize = CGSize(width: 100, height: 100)
 
         self.collectionView.setTranslatesAutoresizingMaskIntoConstraints(false)
 
@@ -39,8 +40,7 @@ class GalleryViewController: UIViewController, UICollectionViewDataSource, UICol
         super.viewDidLoad()
         
         self.setupAutolayoutConstraints()
-        
-        self.title = "Gallery"
+        self.title = NSLocalizedString("Gallery", comment: "Gallery View title")
         self.view.backgroundColor = UIColor.blackColor()
         
         self.collectionView.dataSource = self
@@ -49,6 +49,38 @@ class GalleryViewController: UIViewController, UICollectionViewDataSource, UICol
         self.collectionView.registerClass(GalleryCell.self, forCellWithReuseIdentifier: "GALLERY_CELL")
         
         self.imageGallery = loadGalleryImages()
+        
+        let pinchRecognizer = UIPinchGestureRecognizer(target: self, action: "collectionViewPinched:")
+        self.collectionView.addGestureRecognizer(pinchRecognizer)
+        
+    }
+    
+    //MARK: Gesture Recognizer Actions
+    func collectionViewPinched(sender: UIPinchGestureRecognizer) {
+        switch sender.state {
+        case .Began:
+            println("")
+        case .Changed:
+            println("")
+        case .Ended:
+            self.collectionView.performBatchUpdates({ () -> Void in
+                let oldWidth = self.collectionViewFlowLayout.itemSize.width
+                let oldHeight = self.collectionViewFlowLayout.itemSize.height
+                if sender.velocity > 0 {
+                    //zoom in
+                    let newSize = CGSize(width: oldWidth * 1.5 , height: oldHeight * 1.5)
+                    self.collectionViewFlowLayout.itemSize = newSize
+                } else if sender.velocity < 0 {
+                    //zoom out
+                    let newSize = CGSize(width: oldWidth / 1.5 , height: oldHeight / 1.5)
+                    self.collectionViewFlowLayout.itemSize = newSize
+                }
+                }, completion: { (completed) -> Void in
+            })
+
+        default:
+            println("default")
+        }
     }
         
     
@@ -76,6 +108,8 @@ class GalleryViewController: UIViewController, UICollectionViewDataSource, UICol
         self.delegate?.controllerDidSelectImage(self.imageGallery[indexPath.row])
         self.navigationController?.popViewControllerAnimated(true)
     }
+    
+    
     
     //MARK: Autolayout Constraints
     func setupAutolayoutConstraints() {

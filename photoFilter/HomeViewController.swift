@@ -11,7 +11,10 @@ import Social
 
 class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionViewDataSource, UICollectionViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
-    let alertController = UIAlertController(title: "<Title>", message: "<message>", preferredStyle: .ActionSheet)
+    let alertController = UIAlertController(
+        title: NSLocalizedString("Title", comment: "title for aciton sheet"),
+        message: NSLocalizedString("Select an option", comment: "message for aciton sheet"),
+        preferredStyle: .ActionSheet)
 
     var imageView = UIImageView()
     let imageViewYFullView = 8 as CGFloat
@@ -46,7 +49,9 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         self.rootView.frame = UIScreen.mainScreen().bounds
         self.rootView.backgroundColor = UIColor.blackColor()
         
-        self.photoButton.setTitle("Photo", forState: .Normal)
+        self.photoButton.setTitle(
+            NSLocalizedString("Photo", comment: "aciton sheet Photo button"),
+            forState: .Normal)
         self.photoButton.setTitleColor(UIColor.whiteColor(), forState: .Normal)
         self.photoButton.addTarget(self, action: "photoButtonPressed:", forControlEvents: .TouchUpInside)
 
@@ -78,11 +83,12 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         
         self.setupAutolayoutConstraints()
         
-        self.title = "Home"
+        self.title = NSLocalizedString("Home", comment: "Home View title")
         
         self.doneButton = UIBarButtonItem(title: "Done", style: .Done, target: self, action: "doneButtonPressed")
         self.shareButton = UIBarButtonItem(barButtonSystemItem: .Action, target: self, action: "shareButtonPressed")
-        self.cancelFilterButton = UIBarButtonItem(title: "Cancel", style: .Done, target: self, action: "cancelFilterButtonPressed")
+        self.cancelFilterButton = UIBarButtonItem(title: NSLocalizedString("Cancel", comment: "Cancel filter button"),
+            style: .Done, target: self, action: "cancelFilterButtonPressed")
         self.navigationItem.rightBarButtonItem = self.shareButton
         
         self.collectionView.dataSource = self
@@ -93,7 +99,9 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         self.imageView.contentMode = .ScaleAspectFill
         self.imageView.layer.masksToBounds = true
         
-        let galleryOption = UIAlertAction(title: "Gallery", style: .Default) { (action) -> Void in
+
+        let galleryOption = UIAlertAction(title: NSLocalizedString("Gallery", comment: "aciton sheet GAllery button"),
+            style: .Default) { (action) -> Void in
             let galleryVC = GalleryViewController()
             galleryVC.delegate = self
             self.navigationController?.pushViewController(galleryVC, animated: true)
@@ -106,7 +114,8 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
             self.navigationController?.pushViewController(photoVC, animated: true)
         }
         
-        self.filterOption = UIAlertAction(title: "Apply Filter", style: .Default) { (action) -> Void in
+        self.filterOption = UIAlertAction(title: NSLocalizedString("Apply Filter", comment: "aciton sheet Apply Filter button"),
+            style: .Default) { (action) -> Void in
             //set new margin to show filter collectionView
             self.imageViewYConstraint.constant = self.imageViewYSmallerView
             self.collectionViewYConstraint.constant = self.collectionViewYshow
@@ -122,17 +131,20 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
 
         
         if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera) {
-            let cameraOption = UIAlertAction(title: "Camera", style: .Default) { (action) -> Void in
-                let imagePickerController = UIImagePickerController()
-                imagePickerController.sourceType = .Camera
-                imagePickerController.allowsEditing = true
-                imagePickerController.delegate = self
-                self.presentViewController(imagePickerController, animated: true, completion: nil)
+            let cameraOption = UIAlertAction(
+                title: NSLocalizedString("Camera", comment: "aciton sheet Camera button"),
+                style: .Default) { (action) -> Void in
+                    let imagePickerController = UIImagePickerController()
+                    imagePickerController.sourceType = .Camera
+                    imagePickerController.allowsEditing = true
+                    imagePickerController.delegate = self
+                    self.presentViewController(imagePickerController, animated: true, completion: nil)
             }
             self.alertController.addAction(cameraOption)
         }
         
-        let cancelOption = UIAlertAction(title: "Cancel", style: .Cancel) { (action) -> Void in
+        let cancelOption = UIAlertAction(title: NSLocalizedString("Cancel", comment: "aciton sheet Cancel button"),
+            style: .Cancel) { (action) -> Void in
             //close actionsheet
         }
         
@@ -168,7 +180,15 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
             "CISepiaTone",
             "CIPhotoEffectChrome",
             "CIPhotoEffectNoir",
-            "CIPhotoEffectFade"]
+            "CIPhotoEffectInstant",
+            "CIPhotoEffectFade",
+            "CIPhotoEffectTransfer",
+            "CIPhotoEffectMono",
+            "CIPhotoEffectTonal",
+            "CIPhotoEffectProcess",
+            "CIDotScreen",
+            "CIHatchedScreen",
+            "CICircularScreen"]
         
         for name in self.filterNames {
             let thumbnail = Photo(filterName: name, operationQueue: self.imageQueue, context: self.gpuContext)
@@ -258,6 +278,8 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         } else {
             println("twitter is not available")
         }
+        
+        //add text/email/save image option???
     }
     
     func doneButtonPressed() {
@@ -289,23 +311,21 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     //MARK: Autolayout Constraints
     func setupAutolayoutConstraints() {
 
+        //vertical layout of imageView and PhotoButton
+        //also center align ImageView and PhotoButton
+        //save Y constraint to allow of animation
         let imageViewConstraintVeritcal = NSLayoutConstraint.constraintsWithVisualFormat(
-            "V:|-80-[imageView]-(\(self.imageViewYFullView))-[photoButton]",
-            options: nil, metrics: nil, views: self.views)
+            "V:|-80-[imageView]-(\(self.imageViewYFullView))-[photoButton]-8-|",
+            options: NSLayoutFormatOptions.AlignAllCenterX,
+            metrics: nil, views: self.views)
         self.imageViewYConstraint = imageViewConstraintVeritcal[1] as NSLayoutConstraint
         self.rootView.addConstraints(imageViewConstraintVeritcal)
 
-        self.rootView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(
-            "V:[photoButton]-8-|",
-            options: nil, metrics: nil, views: self.views))
+        //horizontal layout
         self.rootView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(
             "H:|-16-[imageView]-16-|",
             options: nil, metrics: nil, views: self.views))
         
-        //center photoButton horizontally
-        self.rootView.addConstraint(NSLayoutConstraint(
-            item: views["photoButton"] as UIView!, attribute: NSLayoutAttribute.CenterX, relatedBy: NSLayoutRelation.Equal,
-            toItem: rootView, attribute: .CenterX, multiplier: 1.0, constant: 0.0))
         
         //animated collectionView layout
         self.rootView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(

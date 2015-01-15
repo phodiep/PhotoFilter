@@ -20,6 +20,18 @@ class GalleryCell: UICollectionViewCell {
         self.backgroundColor = UIColor.blackColor()
         self.imageView.frame = self.bounds
         
+        self.imageView.setTranslatesAutoresizingMaskIntoConstraints(false)
+        
+        let views = ["imageView" : self.imageView]
+        
+        self.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(
+            "H:|[imageView]|",
+            options: nil, metrics: nil, views: views))
+        self.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(
+            "V:|[imageView]|",
+            options: nil, metrics: nil, views: views))
+
+        
     }
     
     required init(coder aDecoder: NSCoder) {
