@@ -89,6 +89,10 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         self.collectionView.delegate = self
         self.collectionView.registerClass(FilterCell.self, forCellWithReuseIdentifier: "FILTER_CELL")
         
+        // fill imageView with image and crop edges if necessary
+        self.imageView.contentMode = .ScaleAspectFill
+        self.imageView.layer.masksToBounds = true
+        
         let galleryOption = UIAlertAction(title: "Gallery", style: .Default) { (action) -> Void in
             let galleryVC = GalleryViewController()
             galleryVC.delegate = self
