@@ -27,6 +27,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     
     let rootView = UIView()
     var views = [String : AnyObject]()
+    var filterOption: UIAlertAction?
     
     var originalThumbnail: UIImage?
     var filterNames = [String]()
@@ -101,21 +102,20 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
             self.navigationController?.pushViewController(photoVC, animated: true)
         }
         
-        
-        let filterOption = UIAlertAction(title: "Apply Filter", style: .Default) { (action) -> Void in
+        self.filterOption = UIAlertAction(title: "Apply Filter", style: .Default) { (action) -> Void in
             //set new margin to show filter collectionView
             self.imageViewYConstraint.constant = self.imageViewYSmallerView
             self.collectionViewYConstraint.constant = self.collectionViewYshow
             
             self.preFilterImage.image = self.imageView.image
-                
+            
             UIView.animateWithDuration(0.4, animations: { () -> Void in
                 self.view.layoutIfNeeded()
             })
             self.navigationItem.rightBarButtonItem = self.doneButton
             self.navigationItem.leftBarButtonItem = self.cancelFilterButton
         }
-        
+
         
         if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera) {
             let cameraOption = UIAlertAction(title: "Camera", style: .Default) { (action) -> Void in
@@ -134,11 +134,21 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         
         self.alertController.addAction(galleryOption)
         self.alertController.addAction(photoOption)
-        self.alertController.addAction(filterOption)
+        self.alertController.addAction(filterOption!)
         self.alertController.addAction(cancelOption)
         
         setupGPU()
         setupThumbnails()
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        if self.imageView.image != nil {
+            self.filterOption!.enabled = true
+        } else {
+            self.filterOption!.enabled = false
+        }
     }
     
     
