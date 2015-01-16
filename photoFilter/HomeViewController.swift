@@ -22,6 +22,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     var imageViewYConstraint: NSLayoutConstraint!
     
     var preFilterImage = UIImageView()
+    var filterApplied = false
     
     var collectionView: UICollectionView!
     var collectionViewYConstraint: NSLayoutConstraint!
@@ -62,6 +63,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         collectionViewFlowLayout.scrollDirection = .Horizontal
         self.collectionView.backgroundColor = UIColor.blackColor()
         
+
         self.photoButton.setTranslatesAutoresizingMaskIntoConstraints(false)
         self.imageView.setTranslatesAutoresizingMaskIntoConstraints(false)
         self.collectionView.setTranslatesAutoresizingMaskIntoConstraints(false)
@@ -224,10 +226,10 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         if thumbnail.originalImage != nil {
             if thumbnail.filteredImage == nil {
                 thumbnail.generateFilteredImage()
-                cell.imageView.image = thumbnail.filteredImage!
-                cell.filterLabel.text = self.filterNames[indexPath.row][1]
             }
-        }
+            cell.imageView.image = thumbnail.filteredImage!
+            cell.filterLabel.text = self.filterNames[indexPath.row][1]
+            }
         return cell
     }
     
@@ -235,11 +237,12 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         let selectedFilter = filterNames[indexPath.row][0]
         
         let filteredImage = Photo(filterName: selectedFilter, operationQueue: self.imageQueue, context: self.gpuContext)
-        filteredImage.originalImage = self.imageView.image
+        filteredImage.originalImage = self.preFilterImage.image
         filteredImage.generateFilteredImage()
         self.imageView.image = filteredImage.filteredImage
 
     }
+
     
     //MARK: UIPickerControllerDelegate
     func imagePickerControllerDidCancel(picker: UIImagePickerController) {
@@ -302,7 +305,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     }
     
     func doneFilterButtonPressed() {
-        // hide filter collection view and revert right bar button to share
+        // show fill imageView, hide filter collection view, and revert right bar button to share
         self.navigationItem.leftBarButtonItem = nil
         self.navigationItem.rightBarButtonItem = self.shareButton
         self.imageViewYConstraint.constant = self.imageViewYFullView
