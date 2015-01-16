@@ -173,6 +173,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
             self.alertController.addAction(cameraOption)
         }
         
+        
         // Cancel option
         let cancelOption = UIAlertAction(title: NSLocalizedString("Cancel", comment: "aciton sheet Cancel button"),
             style: .Cancel) { (action) -> Void in
@@ -184,6 +185,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         self.alertController.addAction(photoOption)
         self.alertController.addAction(filterOption!)
         self.alertController.addAction(cancelOption)
+
     }
     
     func setupGPU() {
@@ -292,6 +294,34 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     }
     
     func shareButtonPressed() {
+        
+        //add text/email/save image option???
+        println("share")
+        let shareAlertController = UIAlertController(
+            title: NSLocalizedString("Share Image", comment: "title for share aciton sheet"),
+            message: NSLocalizedString("Select an option", comment: "message for share aciton sheet"),
+            preferredStyle: .ActionSheet)
+        
+        let saveImageOption = UIAlertAction(title: "Photo Album", style: .Default) { (action) -> Void in
+            self.saveImageToPhotos()
+        }
+        
+        let shareTwitterOption = UIAlertAction(title: "Twitter", style: .Default) { (action) -> Void in
+            self.saveImageToPhotos()
+        }
+        
+        // Cancel option
+        let cancelOption = UIAlertAction(title: NSLocalizedString("Cancel", comment: "share action sheet Cancel button"),
+            style: .Cancel) { (action) -> Void in
+                //close actionsheet
+        }
+        
+        shareAlertController.addAction(shareTwitterOption)
+        shareAlertController.addAction(saveImageOption)
+        shareAlertController.addAction(cancelOption)
+    }
+
+    func postImageOnTwitter() {
         // share imageview on twitter
         if SLComposeViewController.isAvailableForServiceType(SLServiceTypeTwitter) {
             let SLViewController = SLComposeViewController(forServiceType: SLServiceTypeTwitter)
@@ -300,8 +330,11 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         } else {
             println("twitter is not available")
         }
-        
-        //add text/email/save image option???
+
+    }
+    
+    func saveImageToPhotos() {
+        UIImageWriteToSavedPhotosAlbum(self.imageView.image, nil, nil, nil)
     }
     
     func doneFilterButtonPressed() {
