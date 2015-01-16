@@ -294,9 +294,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     }
     
     func shareButtonPressed() {
-        
-        //add text/email/save image option???
-        println("share")
+
         let shareAlertController = UIAlertController(
             title: NSLocalizedString("Share Image", comment: "title for share aciton sheet"),
             message: NSLocalizedString("Select an option", comment: "message for share aciton sheet"),
@@ -307,7 +305,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         }
         
         let shareTwitterOption = UIAlertAction(title: "Twitter", style: .Default) { (action) -> Void in
-            self.saveImageToPhotos()
+            self.postImageOnTwitter()
         }
         
         // Cancel option
@@ -315,10 +313,12 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
             style: .Cancel) { (action) -> Void in
                 //close actionsheet
         }
-        
+
         shareAlertController.addAction(shareTwitterOption)
         shareAlertController.addAction(saveImageOption)
         shareAlertController.addAction(cancelOption)
+        self.presentViewController(shareAlertController, animated: true, completion: nil)
+
     }
 
     func postImageOnTwitter() {
