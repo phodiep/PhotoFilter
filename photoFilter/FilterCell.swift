@@ -19,8 +19,7 @@ class FilterCell: UICollectionViewCell {
         self.backgroundColor = UIColor.blackColor()
 
         self.filterLabel.textColor = UIColor.whiteColor()
-        self.filterLabel.backgroundColor = UIColor.blackColor()
-        self.filterLabel.font = UIFont(name: filterLabel.font.fontName, size: 10)
+        self.filterLabel.font = UIFont(name: filterLabel.font.fontName, size: 13)
         
         self.imageView.setTranslatesAutoresizingMaskIntoConstraints(false)
         self.filterLabel.setTranslatesAutoresizingMaskIntoConstraints(false)
@@ -31,13 +30,13 @@ class FilterCell: UICollectionViewCell {
         let views = ["imageView": self.imageView,
             "filterLabel" : self.filterLabel]
 
-        self.addConstraint(NSLayoutConstraint(
-            item: views["filterLabel"] as UIView!, attribute: NSLayoutAttribute.CenterX, relatedBy: NSLayoutRelation.Equal,
-            toItem: self, attribute: .CenterX, multiplier: 1.0, constant: 0.0))
-
         self.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(
-            "V:[filterLabel]|",
+            "H:|[imageView]|",
             options: nil, metrics: nil, views: views))
+        
+        self.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(
+            "V:[imageView][filterLabel]|",
+            options: NSLayoutFormatOptions.AlignAllCenterX, metrics: nil, views: views))
         
     }
     

@@ -33,7 +33,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     var filterOption: UIAlertAction?
     
     var originalThumbnail: UIImage?
-    var filterNames = [String]()
+    var filterNames = [ [String] ]()
     let imageQueue = NSOperationQueue()
     var gpuContext: CIContext!
     var thumbnails = [Photo]()
@@ -177,21 +177,21 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
 
     func setupThumbnails() {
         self.filterNames = [
-            "CISepiaTone",
-            "CIPhotoEffectChrome",
-            "CIPhotoEffectNoir",
-            "CIPhotoEffectInstant",
-            "CIPhotoEffectFade",
-            "CIPhotoEffectTransfer",
-            "CIPhotoEffectMono",
-            "CIPhotoEffectTonal",
-            "CIPhotoEffectProcess",
-            "CIDotScreen",
-            "CIHatchedScreen",
-            "CICircularScreen"]
+            ["CISepiaTone", "Sepia"],
+            ["CIPhotoEffectChrome", "Chrome"],
+            ["CIPhotoEffectNoir", "Noir"],
+            ["CIPhotoEffectInstant", "Instant"],
+            ["CIPhotoEffectFade", "Fade"],
+            ["CIPhotoEffectTransfer", "Transfer"],
+            ["CIPhotoEffectMono", "Mono"],
+            ["CIPhotoEffectTonal", "Tonal"],
+            ["CIPhotoEffectProcess", "Process"],
+            ["CIDotScreen", "DotScreen"],
+            ["CIHatchedScreen", "HatchedScreen"],
+            ["CICircularScreen", "CircularScreen"]]
         
-        for name in self.filterNames {
-            let thumbnail = Photo(filterName: name, operationQueue: self.imageQueue, context: self.gpuContext)
+        for item in self.filterNames {
+            let thumbnail = Photo(filterName: item[0], operationQueue: self.imageQueue, context: self.gpuContext)
             self.thumbnails.append(thumbnail)
         }
     }
@@ -208,14 +208,14 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
             if thumbnail.filteredImage == nil {
                 thumbnail.generateFilteredImage()
                 cell.imageView.image = thumbnail.filteredImage!
-                cell.filterLabel.text = self.filterNames[indexPath.row]
+                cell.filterLabel.text = self.filterNames[indexPath.row][1]
             }
         }
         return cell
     }
     
     func collectionView(collectionView: UICollectionView, didSelectItemAtIndexPath indexPath: NSIndexPath) {
-        let selectedFilter = filterNames[indexPath.row]
+        let selectedFilter = filterNames[indexPath.row][0]
         
         let filteredImage = Photo(filterName: selectedFilter, operationQueue: self.imageQueue, context: self.gpuContext)
         filteredImage.originalImage = self.imageView.image
