@@ -8,11 +8,12 @@
 
 import UIKit
 import Social
+import AVFoundation
 
 class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionViewDataSource, UICollectionViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     let alertController = UIAlertController(
-        title: NSLocalizedString("Title", comment: "title for aciton sheet"),
+        title: NSLocalizedString("photoFilter", comment: "title for aciton sheet"),
         message: NSLocalizedString("Select an option", comment: "message for aciton sheet"),
         preferredStyle: .ActionSheet)
 
@@ -43,6 +44,10 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     var doneButton: UIBarButtonItem?
     var shareButton: UIBarButtonItem?
     var cancelFilterButton: UIBarButtonItem?
+    
+    //AVFoundations properties
+    let captureSession = AVCaptureSession()
+    var captureDevice: AVCaptureDevice?
 
 
     //MARK: HomeViewController Lifecycle
@@ -94,6 +99,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         // fill imageView with image and crop edges if necessary
         self.imageView.contentMode = .ScaleAspectFill
         self.imageView.layer.masksToBounds = true
+        self.imageView.userInteractionEnabled = true
 
         // NavigationBar Items
         self.shareButton = UIBarButtonItem(barButtonSystemItem: .Action, target: self, action: "shareButtonPressed")
@@ -104,10 +110,18 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         self.cancelFilterButton = UIBarButtonItem(title: NSLocalizedString("Cancel", comment: "Cancel filter button"),
             style: .Done, target: self, action: "cancelFilterButtonPressed")
 
+        //doubleTap imageView to open filter
+        let doubleTapRecognizer = UITapGestureRecognizer(target: self, action: "imageViewDoubleTapped:")
+        doubleTapRecognizer.numberOfTapsRequired = 2
+        self.imageView.addGestureRecognizer(doubleTapRecognizer)
+        
+        
         
         self.setupAlertControllerItems()
         self.setupGPU()
         self.setupFilterThumbnails()
+        
+        
     }
     
     override func viewWillAppear(animated: Bool) {
@@ -132,7 +146,8 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         }
         
         // Photo
-        let photoOption = UIAlertAction(title: "Photo", style: .Default) { (action) -> Void in
+        let photoOption = UIAlertAction(title: NSLocalizedString("Photo", comment: "aciton sheet Photo button"),
+            style: .Default) { (action) -> Void in
             let photoVC = PhotoViewController()
             photoVC.delegate = self
             photoVC.destinationSize = CGSize(width: 100, height: 100)
@@ -142,21 +157,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         // Apply Filter
         self.filterOption = UIAlertAction(title: NSLocalizedString("Apply Filter", comment: "aciton sheet Apply Filter button"),
             style: .Default) { (action) -> Void in
-                //set new margin to show filter collectionView on screen
-                self.imageViewYConstraint.constant = self.imageViewYSmallerView
-                self.collectionViewYConstraint.constant = self.collectionViewYshow
-                
-                //save original image to allow undo filtering
-                self.preFilterImage.image = self.imageView.image
-                
-                //animate
-                UIView.animateWithDuration(0.4, animations: { () -> Void in
-                    self.view.layoutIfNeeded()
-                })
-                
-                //show filter specific navigation bar items
-                self.navigationItem.rightBarButtonItem = self.doneButton
-                self.navigationItem.leftBarButtonItem = self.cancelFilterButton
+                self.showFilterOptions()
         }
         
         // Camera (will be shown if avaiable on device)
@@ -172,6 +173,31 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
             }
             self.alertController.addAction(cameraOption)
         }
+        
+        // Camera using AVFoundations============
+        // following tutorial - http://jamesonquave.com/blog/taking-control-of-the-iphone-camera-in-ios-8-with-swift-part-1/
+
+        captureSession.sessionPreset = AVCaptureSessionPresetLow
+        let devices = AVCaptureDevice.devices() // array of all devices available
+        for device in devices {
+            if device.hasMediaType(AVMediaTypeVideo) && device.position == AVCaptureDevicePosition.Back {
+                    // set back camera as captureDevice
+                    self.captureDevice = device as? AVCaptureDevice
+            }
+        }
+
+        if captureDevice != nil {
+            let cameraAVoption = UIAlertAction(
+                title: NSLocalizedString("Camera AVF", comment: "action sheet Camera button"),
+                style: .Default) { (action) -> Void in
+                self.beginCameraAVSession()
+            }
+            self.alertController.addAction(cameraAVoption)
+            cameraAVoption.enabled = false
+        }
+
+        //==================
+        
         
         
         // Cancel option
@@ -206,9 +232,9 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
             ["CIPhotoEffectMono", "Mono"],
             ["CIPhotoEffectTonal", "Tonal"],
             ["CIPhotoEffectProcess", "Process"],
-            ["CIDotScreen", "DotScreen"],
-            ["CIHatchedScreen", "HatchedScreen"],
-            ["CICircularScreen", "CircularScreen"]]
+            ["CIDotScreen", "Dot Screen"],
+            ["CIHatchedScreen", "Hatched Screen"],
+            ["CICircularScreen", "Circular Screen"]]
         
         for item in self.filterNames {
             let thumbnail = Photo(filterName: item[0], operationQueue: self.imageQueue, context: self.gpuContext)
@@ -287,10 +313,22 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     }
     
     
+    //MARK: Gesture Recognizer Actions
+    func imageViewDoubleTapped(sender: UITapGestureRecognizer) {
+        self.showFilterOptions()
+    }
+
+    
     
     //MARK: Button actions
     func photoButtonPressed(sender: UIButton) {
-        self.presentViewController(self.alertController, animated: true, completion: nil)
+        if UIDevice.currentDevice().userInterfaceIdiom == .Pad {
+            if let popoverController = alertController.popoverPresentationController {
+                popoverController.sourceView = sender
+                popoverController.sourceRect = sender.bounds
+            }
+        }
+            self.presentViewController(self.alertController, animated: true, completion: nil)
     }
     
     func shareButtonPressed() {
@@ -300,7 +338,8 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
             message: NSLocalizedString("Select an option", comment: "message for share aciton sheet"),
             preferredStyle: .ActionSheet)
         
-        let saveImageOption = UIAlertAction(title: "Photo Album", style: .Default) { (action) -> Void in
+        let saveImageOption = UIAlertAction(title: NSLocalizedString("Photo", comment: "aciton sheet Photo button"),
+            style: .Default) { (action) -> Void in
             self.saveImageToPhotos()
         }
         
@@ -318,7 +357,6 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         shareAlertController.addAction(saveImageOption)
         shareAlertController.addAction(cancelOption)
         self.presentViewController(shareAlertController, animated: true, completion: nil)
-
     }
 
     func postImageOnTwitter() {
@@ -330,11 +368,29 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         } else {
             println("twitter is not available")
         }
-
     }
     
     func saveImageToPhotos() {
         UIImageWriteToSavedPhotosAlbum(self.imageView.image, nil, nil, nil)
+    }
+    
+    func showFilterOptions() {
+        //set new margin to show filter collectionView on screen
+        self.imageViewYConstraint.constant = self.imageViewYSmallerView
+        self.collectionViewYConstraint.constant = self.collectionViewYshow
+        
+        //save original image to allow undo filtering
+        self.preFilterImage.image = self.imageView.image
+        
+        //animate
+        UIView.animateWithDuration(0.4, animations: { () -> Void in
+            self.view.layoutIfNeeded()
+        })
+        
+        //show filter specific navigation bar items
+        self.navigationItem.rightBarButtonItem = self.doneButton
+        self.navigationItem.leftBarButtonItem = self.cancelFilterButton
+        
     }
     
     func doneFilterButtonPressed() {
@@ -355,6 +411,34 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         //revert imageView to original image
         self.imageView.image = self.preFilterImage.image
     }
+
+    
+    func beginCameraAVSession() {
+        captureSession.addInput(AVCaptureDeviceInput(device: captureDevice, error: nil))
+        var previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
+        self.view.layer.addSublayer(previewLayer)
+        previewLayer?.frame = self.view.layer.frame
+        captureSession.startRunning()
+        
+    }
+    
+//    func captureCameraAVSession() {
+//        var videoConnection: AVCaptureConnection?
+//        for connection in self.stillImageOutput.connections {
+//            for port in cnonection.inputPorts! {
+//                if port.mediaType == AVMediaTypeVideo {
+//                    videoConnection = connection as? AVCaptureConnection
+//                    break
+//                }
+//            }
+//            if videoConnection != nil {
+//
+//
+//            }
+//        }
+//        
+//    
+//    }
     
     
     

@@ -60,10 +60,6 @@ class PhotoViewController: UIViewController, UICollectionViewDataSource, UIColle
     //MARK: Gesture Recognizer Actions
     func collectionViewPinched(sender: UIPinchGestureRecognizer) {
         switch sender.state {
-        case .Began:
-            println("")
-        case .Changed:
-            println("")
         case .Ended:
             self.collectionView.performBatchUpdates({ () -> Void in
                 let oldWidth = self.collectionViewFlowLayout.itemSize.width
@@ -79,9 +75,8 @@ class PhotoViewController: UIViewController, UICollectionViewDataSource, UIColle
                 }
                 }, completion: { (completed) -> Void in
             })
-            
         default:
-            println("default")
+            break
         }
     }
     

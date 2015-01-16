@@ -58,10 +58,6 @@ class GalleryViewController: UIViewController, UICollectionViewDataSource, UICol
     //MARK: Gesture Recognizer Actions
     func collectionViewPinched(sender: UIPinchGestureRecognizer) {
         switch sender.state {
-        case .Began:
-            println("")
-        case .Changed:
-            println("")
         case .Ended:
             self.collectionView.performBatchUpdates({ () -> Void in
                 let oldWidth = self.collectionViewFlowLayout.itemSize.width
@@ -74,12 +70,11 @@ class GalleryViewController: UIViewController, UICollectionViewDataSource, UICol
                     //zoom out
                     let newSize = CGSize(width: oldWidth / 1.5 , height: oldHeight / 1.5)
                     self.collectionViewFlowLayout.itemSize = newSize
-                }
-                }, completion: { (completed) -> Void in
+                }}, completion: { (completed) -> Void in
             })
 
         default:
-            println("default")
+            break
         }
     }
         

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1D4A0CE41A69AC240057C68B /* MessageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D4A0CE31A69AC240057C68B /* MessageViewController.swift */; };
 		1D91795E1A686EA70005945D /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1D9179601A686EA70005945D /* Localizable.strings */; };
 		1DA4EABE1A64642600CCE4E2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DA4EABD1A64642600CCE4E2 /* AppDelegate.swift */; };
 		1DA4EAC51A64642600CCE4E2 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1DA4EAC41A64642600CCE4E2 /* Images.xcassets */; };
@@ -33,6 +34,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1D4A0CE31A69AC240057C68B /* MessageViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessageViewController.swift; sourceTree = "<group>"; };
 		1D91795F1A686EA70005945D /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		1D9179611A686FCF0005945D /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
 		1D9179621A686FCF0005945D /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -156,6 +158,7 @@
 				1DA4EAEA1A64665900CCE4E2 /* GalleryViewController.swift */,
 				1DE582301A65C414000F90B5 /* Protocols.swift */,
 				1DE5823A1A670FF1000F90B5 /* PhotoViewController.swift */,
+				1D4A0CE31A69AC240057C68B /* MessageViewController.swift */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -265,6 +268,7 @@
 				1DE582371A65E1F6000F90B5 /* FilterCell.swift in Sources */,
 				1DE5822F1A65C126000F90B5 /* GalleryCell.swift in Sources */,
 				1DA4EAEB1A64665900CCE4E2 /* GalleryViewController.swift in Sources */,
+				1D4A0CE41A69AC240057C68B /* MessageViewController.swift in Sources */,
 				1DE582331A65CA12000F90B5 /* Images.swift in Sources */,
 				1DE5823B1A670FF1000F90B5 /* PhotoViewController.swift in Sources */,
 				1DA4EAE91A64664600CCE4E2 /* HomeViewController.swift in Sources */,
@@ -399,6 +403,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -410,6 +415,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
