@@ -18,7 +18,6 @@ class FilterCell: UICollectionViewCell {
         
         self.backgroundColor = UIColor.blackColor()
 
-        self.filterLabel.frame = CGRect(x: 0, y: 100, width: 100, height: 20)
         self.filterLabel.textColor = UIColor.whiteColor()
         self.filterLabel.backgroundColor = UIColor.blackColor()
         self.filterLabel.font = UIFont(name: filterLabel.font.fontName, size: 10)
