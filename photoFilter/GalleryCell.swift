@@ -24,6 +24,7 @@ class GalleryCell: UICollectionViewCell {
         
         let views = ["imageView" : self.imageView]
         
+        //set imageview constraints to full size of cell
         self.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(
             "H:|[imageView]|",
             options: nil, metrics: nil, views: views))

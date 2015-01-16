@@ -97,6 +97,11 @@ class PhotoViewController: UIViewController, UICollectionViewDataSource, UIColle
         let asset = assetFetchResults[indexPath.row] as PHAsset
         self.imageManager.requestImageForAsset(asset, targetSize: CGSize(width: 100, height: 100), contentMode: .AspectFill, options: nil) { (image, info) -> Void in
             cell.imageView.image = image
+            
+            // fill cell with image and crop edges if necessary
+            cell.imageView.contentMode = .ScaleAspectFill
+            cell.imageView.layer.masksToBounds = true
+
         }
         return cell
     }
