@@ -84,29 +84,52 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         self.setupAutolayoutConstraints()
         
         self.title = NSLocalizedString("Home", comment: "Home View title")
-        
-        self.doneButton = UIBarButtonItem(title: "Done", style: .Done, target: self, action: "doneButtonPressed")
-        self.shareButton = UIBarButtonItem(barButtonSystemItem: .Action, target: self, action: "shareButtonPressed")
-        self.cancelFilterButton = UIBarButtonItem(title: NSLocalizedString("Cancel", comment: "Cancel filter button"),
-            style: .Done, target: self, action: "cancelFilterButtonPressed")
-        self.navigationItem.rightBarButtonItem = self.shareButton
-        
         self.collectionView.dataSource = self
         self.collectionView.delegate = self
+
         self.collectionView.registerClass(FilterCell.self, forCellWithReuseIdentifier: "FILTER_CELL")
-        
+
         // fill imageView with image and crop edges if necessary
         self.imageView.contentMode = .ScaleAspectFill
         self.imageView.layer.masksToBounds = true
-        
 
+        // NavigationBar Items
+        self.shareButton = UIBarButtonItem(barButtonSystemItem: .Action, target: self, action: "shareButtonPressed")
+        self.navigationItem.rightBarButtonItem = self.shareButton
+        
+        // NavigationBar Items (filter specific, will be shown when filter is activated)
+        self.doneButton = UIBarButtonItem(title: "Done", style: .Done, target: self, action: "doneFilterButtonPressed")
+        self.cancelFilterButton = UIBarButtonItem(title: NSLocalizedString("Cancel", comment: "Cancel filter button"),
+            style: .Done, target: self, action: "cancelFilterButtonPressed")
+
+        
+        self.setupAlertControllerItems()
+        self.setupGPU()
+        self.setupFilterThumbnails()
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        // enable Apply Filter button if image is selected
+        if self.imageView.image != nil {
+            self.filterOption!.enabled = true
+        } else {
+            self.filterOption!.enabled = false
+        }
+    }
+    
+    func setupAlertControllerItems() {
+        
+        // Gallery
         let galleryOption = UIAlertAction(title: NSLocalizedString("Gallery", comment: "aciton sheet GAllery button"),
             style: .Default) { (action) -> Void in
-            let galleryVC = GalleryViewController()
-            galleryVC.delegate = self
-            self.navigationController?.pushViewController(galleryVC, animated: true)
+                let galleryVC = GalleryViewController()
+                galleryVC.delegate = self
+                self.navigationController?.pushViewController(galleryVC, animated: true)
         }
-
+        
+        // Photo
         let photoOption = UIAlertAction(title: "Photo", style: .Default) { (action) -> Void in
             let photoVC = PhotoViewController()
             photoVC.delegate = self
@@ -114,22 +137,27 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
             self.navigationController?.pushViewController(photoVC, animated: true)
         }
         
+        // Apply Filter
         self.filterOption = UIAlertAction(title: NSLocalizedString("Apply Filter", comment: "aciton sheet Apply Filter button"),
             style: .Default) { (action) -> Void in
-            //set new margin to show filter collectionView
-            self.imageViewYConstraint.constant = self.imageViewYSmallerView
-            self.collectionViewYConstraint.constant = self.collectionViewYshow
-            
-            self.preFilterImage.image = self.imageView.image
-            
-            UIView.animateWithDuration(0.4, animations: { () -> Void in
-                self.view.layoutIfNeeded()
-            })
-            self.navigationItem.rightBarButtonItem = self.doneButton
-            self.navigationItem.leftBarButtonItem = self.cancelFilterButton
+                //set new margin to show filter collectionView on screen
+                self.imageViewYConstraint.constant = self.imageViewYSmallerView
+                self.collectionViewYConstraint.constant = self.collectionViewYshow
+                
+                //save original image to allow undo filtering
+                self.preFilterImage.image = self.imageView.image
+                
+                //animate
+                UIView.animateWithDuration(0.4, animations: { () -> Void in
+                    self.view.layoutIfNeeded()
+                })
+                
+                //show filter specific navigation bar items
+                self.navigationItem.rightBarButtonItem = self.doneButton
+                self.navigationItem.leftBarButtonItem = self.cancelFilterButton
         }
-
         
+        // Camera (will be shown if avaiable on device)
         if UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera) {
             let cameraOption = UIAlertAction(
                 title: NSLocalizedString("Camera", comment: "aciton sheet Camera button"),
@@ -143,30 +171,18 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
             self.alertController.addAction(cameraOption)
         }
         
+        // Cancel option
         let cancelOption = UIAlertAction(title: NSLocalizedString("Cancel", comment: "aciton sheet Cancel button"),
             style: .Cancel) { (action) -> Void in
-            //close actionsheet
+                //close actionsheet
         }
         
+        // add all actions to alertController
         self.alertController.addAction(galleryOption)
         self.alertController.addAction(photoOption)
         self.alertController.addAction(filterOption!)
         self.alertController.addAction(cancelOption)
-        
-        setupGPU()
-        setupThumbnails()
     }
-    
-    override func viewWillAppear(animated: Bool) {
-        super.viewDidAppear(animated)
-        
-        if self.imageView.image != nil {
-            self.filterOption!.enabled = true
-        } else {
-            self.filterOption!.enabled = false
-        }
-    }
-    
     
     func setupGPU() {
         // setup GPU for use
@@ -175,7 +191,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         self.gpuContext = CIContext(EAGLContext: eaglContext, options: options)
     }
 
-    func setupThumbnails() {
+    func setupFilterThumbnails() {
         self.filterNames = [
             ["CISepiaTone", "Sepia"],
             ["CIPhotoEffectChrome", "Chrome"],
@@ -196,6 +212,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         }
     }
 
+    
     //MARK: UICollectionViewDataSource
     func collectionView(collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return self.thumbnails.count
@@ -264,6 +281,8 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         
     }
     
+    
+    
     //MARK: Button actions
     func photoButtonPressed(sender: UIButton) {
         self.presentViewController(self.alertController, animated: true, completion: nil)
@@ -282,7 +301,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         //add text/email/save image option???
     }
     
-    func doneButtonPressed() {
+    func doneFilterButtonPressed() {
         // hide filter collection view and revert right bar button to share
         self.navigationItem.leftBarButtonItem = nil
         self.navigationItem.rightBarButtonItem = self.shareButton
@@ -295,18 +314,13 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     
     func cancelFilterButtonPressed() {
         // hide filter collection view and revert right bar button to share
-        self.navigationItem.leftBarButtonItem = nil
-        self.navigationItem.rightBarButtonItem = self.shareButton
-        self.imageViewYConstraint.constant = self.imageViewYFullView
-        self.collectionViewYConstraint.constant = self.collectionViewYhide
-        UIView.animateWithDuration(0.4, animations: { () -> Void in
-            self.view.layoutIfNeeded()
-        })
+        self.doneFilterButtonPressed()
         
-        //revert to original image
+        //revert imageView to original image
         self.imageView.image = self.preFilterImage.image
-
     }
+    
+    
     
     //MARK: Autolayout Constraints
     func setupAutolayoutConstraints() {
@@ -325,7 +339,6 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         self.rootView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(
             "H:|-16-[imageView]-16-|",
             options: nil, metrics: nil, views: self.views))
-        
         
         //animated collectionView layout
         self.rootView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(
