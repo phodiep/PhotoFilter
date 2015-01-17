@@ -109,10 +109,10 @@ class GalleryViewController: UIViewController, UICollectionViewDataSource, UICol
     //MARK: Autolayout Constraints
     func setupAutolayoutConstraints() {
         self.rootView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(
-            "V:|-8-[collectionView]-8-|",
+            "V:|-16-[collectionView]-16-|",
             options: nil, metrics: nil, views: views))
         self.rootView.addConstraints(NSLayoutConstraint.constraintsWithVisualFormat(
-            "H:|-8-[collectionView]-8-|",
+            "H:|-16-[collectionView]-16-|",
             options: nil, metrics: nil, views: views))
 
     }

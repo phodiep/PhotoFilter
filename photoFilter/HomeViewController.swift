@@ -23,7 +23,6 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     var imageViewYConstraint: NSLayoutConstraint!
     
     var preFilterImage = UIImageView()
-    var filterApplied = false
     
     var collectionView: UICollectionView!
     var collectionViewYConstraint: NSLayoutConstraint!
@@ -102,7 +101,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         self.imageView.userInteractionEnabled = true
 
         // NavigationBar Items
-        self.shareButton = UIBarButtonItem(barButtonSystemItem: .Action, target: self, action: "shareButtonPressed")
+        self.shareButton = UIBarButtonItem(barButtonSystemItem: .Action, target: self, action: "shareButtonPressed:")
         self.navigationItem.rightBarButtonItem = self.shareButton
         
         // NavigationBar Items (filter specific, will be shown when filter is activated)
@@ -331,8 +330,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
             self.presentViewController(self.alertController, animated: true, completion: nil)
     }
     
-    func shareButtonPressed() {
-
+    func shareButtonPressed(sender: UIBarButtonItem) {
         let shareAlertController = UIAlertController(
             title: NSLocalizedString("Share Image", comment: "title for share aciton sheet"),
             message: NSLocalizedString("Select an option", comment: "message for share aciton sheet"),
@@ -356,6 +354,13 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         shareAlertController.addAction(shareTwitterOption)
         shareAlertController.addAction(saveImageOption)
         shareAlertController.addAction(cancelOption)
+        
+        if UIDevice.currentDevice().userInterfaceIdiom == .Pad {
+            if let popoverController = shareAlertController.popoverPresentationController {
+                popoverController.barButtonItem = sender
+            }
+        }
+
         self.presentViewController(shareAlertController, animated: true, completion: nil)
     }
 
