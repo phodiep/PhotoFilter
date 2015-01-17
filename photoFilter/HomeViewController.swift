@@ -44,10 +44,12 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     var shareButton: UIBarButtonItem?
     var cancelFilterButton: UIBarButtonItem?
     
-    //AVFoundations properties
+    //AVCamera
     let captureSession = AVCaptureSession()
     var captureDevice: AVCaptureDevice?
+    var stillImageOutput: AVCaptureStillImageOutput?
 
+    
 
     //MARK: HomeViewController Lifecycle
     override func loadView() {
@@ -109,13 +111,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         self.cancelFilterButton = UIBarButtonItem(title: NSLocalizedString("Cancel", comment: "Cancel filter button"),
             style: .Done, target: self, action: "cancelFilterButtonPressed")
 
-        //doubleTap imageView to open filter
-        let doubleTapRecognizer = UITapGestureRecognizer(target: self, action: "imageViewDoubleTapped:")
-        doubleTapRecognizer.numberOfTapsRequired = 2
-        self.imageView.addGestureRecognizer(doubleTapRecognizer)
-        
-        
-        
+
         self.setupAlertControllerItems()
         self.setupGPU()
         self.setupFilterThumbnails()
@@ -126,11 +122,19 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
     override func viewWillAppear(animated: Bool) {
         super.viewDidAppear(animated)
         
-        // enable Apply Filter button if image is selected
+        // enable Apply Filter button, share button, and doubleTapFilterGesture if image is selected
         if self.imageView.image != nil {
             self.filterOption!.enabled = true
+            self.shareButton!.enabled = true
+
+            //doubleTap imageView to open filter
+            let doubleTapRecognizer = UITapGestureRecognizer(target: self, action: "imageViewDoubleTapped:")
+            doubleTapRecognizer.numberOfTapsRequired = 2
+            self.imageView.addGestureRecognizer(doubleTapRecognizer)
+        
         } else {
             self.filterOption!.enabled = false
+            self.shareButton!.enabled = false
         }
     }
     
@@ -171,32 +175,18 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
                     self.presentViewController(imagePickerController, animated: true, completion: nil)
             }
             self.alertController.addAction(cameraOption)
-        }
-        
-        // Camera using AVFoundations============
-        // following tutorial - http://jamesonquave.com/blog/taking-control-of-the-iphone-camera-in-ios-8-with-swift-part-1/
-
-        captureSession.sessionPreset = AVCaptureSessionPresetLow
-        let devices = AVCaptureDevice.devices() // array of all devices available
-        for device in devices {
-            if device.hasMediaType(AVMediaTypeVideo) && device.position == AVCaptureDevicePosition.Back {
-                    // set back camera as captureDevice
-                    self.captureDevice = device as? AVCaptureDevice
-            }
-        }
-
-        if captureDevice != nil {
+            
+            
+            // Camera using AVFoundations <<<<----------------<<<<<<<<
             let cameraAVoption = UIAlertAction(
                 title: NSLocalizedString("Camera AVF", comment: "action sheet Camera button"),
                 style: .Default) { (action) -> Void in
-                self.beginCameraAVSession()
+                    let avCameraVC = AVCameraViewController()
+                    avCameraVC.delegate = self
+                    self.navigationController?.pushViewController(avCameraVC, animated: true)
             }
             self.alertController.addAction(cameraAVoption)
-            cameraAVoption.enabled = false
         }
-
-        //==================
-        
         
         
         // Cancel option
@@ -355,11 +345,11 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         shareAlertController.addAction(saveImageOption)
         shareAlertController.addAction(cancelOption)
         
+        //if device is iPad, set popover Location
         if UIDevice.currentDevice().userInterfaceIdiom == .Pad {
             if let popoverController = shareAlertController.popoverPresentationController {
                 popoverController.barButtonItem = sender
-            }
-        }
+        }}
 
         self.presentViewController(shareAlertController, animated: true, completion: nil)
     }
@@ -417,34 +407,7 @@ class HomeViewController: UIViewController, ImageSelectedProtocol, UICollectionV
         self.imageView.image = self.preFilterImage.image
     }
 
-    
-    func beginCameraAVSession() {
-        captureSession.addInput(AVCaptureDeviceInput(device: captureDevice, error: nil))
-        var previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
-        self.view.layer.addSublayer(previewLayer)
-        previewLayer?.frame = self.view.layer.frame
-        captureSession.startRunning()
         
-    }
-    
-//    func captureCameraAVSession() {
-//        var videoConnection: AVCaptureConnection?
-//        for connection in self.stillImageOutput.connections {
-//            for port in cnonection.inputPorts! {
-//                if port.mediaType == AVMediaTypeVideo {
-//                    videoConnection = connection as? AVCaptureConnection
-//                    break
-//                }
-//            }
-//            if videoConnection != nil {
-//
-//
-//            }
-//        }
-//        
-//    
-//    }
-    
     
     
     //MARK: Autolayout Constraints

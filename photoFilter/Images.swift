@@ -35,27 +35,6 @@ func loadGalleryImages() -> [UIImage] {
     imageGallery.append(image9!)
     imageGallery.append(image10!)
 
-    imageGallery.append(image1!)
-    imageGallery.append(image2!)
-    imageGallery.append(image3!)
-    imageGallery.append(image4!)
-    imageGallery.append(image5!)
-    imageGallery.append(image6!)
-    imageGallery.append(image7!)
-    imageGallery.append(image8!)
-    imageGallery.append(image9!)
-    imageGallery.append(image10!)
-
-    imageGallery.append(image1!)
-    imageGallery.append(image2!)
-    imageGallery.append(image3!)
-    imageGallery.append(image4!)
-    imageGallery.append(image5!)
-    imageGallery.append(image6!)
-    imageGallery.append(image7!)
-    imageGallery.append(image8!)
-    imageGallery.append(image9!)
-    imageGallery.append(image10!)
 
     return imageGallery
 }
