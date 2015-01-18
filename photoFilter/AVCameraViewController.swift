@@ -8,15 +8,16 @@
 
 import UIKit
 import AVFoundation
+//import CoreImage
 
-class AVCameraViewController: UIViewController {
-    
+class AVCameraViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDelegate {
+
     var delegate: ImageSelectedProtocol?
 
     let captureSession = AVCaptureSession()
     var captureDevice: AVCaptureDevice?
     
-    var stillImageOutput: AVCaptureStillImageOutput?
+    let stillImageOutput = AVCaptureStillImageOutput()
     
     
     
@@ -49,12 +50,13 @@ class AVCameraViewController: UIViewController {
         self.view = rootView
     }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
+    override func viewDidAppear(animated: Bool) {
+        super.viewDidAppear(animated)
         
         self.title = NSLocalizedString("Camera", comment: "Gallery View title")
 
-        captureSession.sessionPreset = AVCaptureSessionPresetLow
+        captureSession.sessionPreset = AVCaptureSessionPresetMedium
+        
         let devices = AVCaptureDevice.devices() // array of all devices available
         
         
@@ -77,6 +79,7 @@ class AVCameraViewController: UIViewController {
         var previewLayer = AVCaptureVideoPreviewLayer(session: self.captureSession)
         self.view.layer.addSublayer(previewLayer)
         previewLayer?.frame = self.view.layer.frame
+//        self.stillImageOutput = AVCaptureStillImageOutput()
         self.captureSession.startRunning()
         
         
@@ -85,12 +88,13 @@ class AVCameraViewController: UIViewController {
 
 
     func captureCameraAVSession() {
-        println("This function doesn't work")
+        //does not work!
         
-//        self.stillImageOutput = AVCaptureStillImageOutput()
+        println("image capture does not work")
+
 //        var videoConnection: AVCaptureConnection?
-//        
-//        for connection in self.stillImageOutput!.connections {
+//
+//        for connection in self.stillImageOutput.connections {
 //            for port in connection.inputPorts! {
 //                if port.mediaType == AVMediaTypeVideo {
 //                    videoConnection = connection as? AVCaptureConnection
@@ -101,8 +105,8 @@ class AVCameraViewController: UIViewController {
 //                break
 //            }
 //        }
-//     
-//        self.stillImageOutput?.captureStillImageAsynchronouslyFromConnection(videoConnection, completionHandler: { (imageSampleBuffer, error) -> Void in
+//
+//        self.stillImageOutput.captureStillImageAsynchronouslyFromConnection(videoConnection, completionHandler: { (imageSampleBuffer, error) -> Void in
 //            
 //            if error == nil {
 //                println("error with camera")
@@ -115,6 +119,14 @@ class AVCameraViewController: UIViewController {
 //        })
     }
 
-    
+//    func captureOutput(captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, fromConnection connection: AVCaptureConnection!) {
+//        if connection.supportsVideoOrientation {
+//            connection.videoOrientation = AVCaptureVideoOrientation.Portrait
+//        }
+//        if connection.supportsVideoMirroring {
+//            connection.videoMirrored = false
+//        }
+//        self.sessionDelegate?.cameraSessionDidOutputSampleBuffer?(sampleBuffer)
+//    }
     
 }
